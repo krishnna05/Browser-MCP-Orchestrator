@@ -1,0 +1,41 @@
+# Python virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+
+# Sensitive files / Secrets
+mcp_agent.secrets.yaml
+*.secrets.yaml
+.env
+secrets.yaml
+
+# Application logs & traces
+logs/
+*.log
+*.jsonl
+
+# Streamlit config & secrets
+.streamlit/secrets.toml
+
+# Node & Playwright temporary artifacts
+node_modules/
+.playwright/
+test-results/
+
+# Operating system files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE and editors
+.vscode/
+.idea/
