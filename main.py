@@ -100,6 +100,7 @@ with st.sidebar:
     st.divider()
     cfg = load_openai_config()
     st.markdown("### ⚙️ Runtime Settings")
+    st.caption(f"**Provider:** `{cfg.get('provider', 'groq').upper()}`")
     st.caption(f"**Model:** `{cfg['model']}`")
     st.caption(f"**API Key:** `{'Configured ✅' if cfg['api_key'] else 'Missing ⚠️'}`")
     st.caption("**Engine:** LangGraph StateGraph (async)")
@@ -165,8 +166,9 @@ async def dispatch_command(target_message: str, status_ui: Any, log_container: A
     cfg = load_openai_config()
     if not cfg["api_key"]:
         return (
-            "Authentication required: Please set OPENAI_API_KEY environment variable "
-            "or configure `mcp_agent.secrets.yaml` with your OpenAI credentials.",
+            "Authentication required: Please set your **Groq API key** in `mcp_agent.secrets.yaml` "
+            "under `groq.api_key`, or set the `GROQ_API_KEY` environment variable.\n\n"
+            "Get a free key at https://console.groq.com",
             [],
         )
 

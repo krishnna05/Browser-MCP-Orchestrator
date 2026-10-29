@@ -14,9 +14,10 @@ import re
 from typing import Any, AsyncIterator, Dict, List, Optional
 import yaml
 
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
-from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from langgraph.graph import END, START, StateGraph
 
 from orchestration.state import (
@@ -57,62 +58,113 @@ EXTRACTOR_TOOL_PATTERNS = {
 }
 
 
-def load_openai_config() -> Dict[str, Any]:
-    """Reads OpenAI configuration and API keys from secrets and config files."""
-    api_key = os.getenv("OPENAI_API_KEY")
-    model_name = "gpt-4o-mini"
-    base_url = os.getenv("OPENAI_BASE_URL")
-
-    # Load secrets if present
+def load_llm_config() -> Dict[str, Any]:
+    """
+    Reads LLM provider configuration from secrets and config files.
+    Supports: groq (default), openai.
+    Priority: environment variables > mcp_agent.secrets.yaml > mcp_agent.config.yaml defaults.
+    """
     secrets_file = os.path.join(os.getcwd(), "mcp_agent.secrets.yaml")
-    if os.path.exists(secrets_file):
-        try:
-            with open(secrets_file, "r", encoding="utf-8") as f:
-                sec_data = yaml.safe_load(f) or {}
-                if "openai" in sec_data and isinstance(sec_data["openai"], dict):
-                    if not api_key:
-                        api_key = sec_data["openai"].get("api_key")
-                    if "base_url" in sec_data["openai"]:
-                        base_url = sec_data["openai"].get("base_url")
-        except Exception:
-            pass
-
-    # Load config if present
     config_file = os.path.join(os.getcwd(), "mcp_agent.config.yaml")
+
+    # Defaults
+    provider = "groq"
+    model = "openai/gpt-oss-120b"
+    api_key: Optional[str] = None
+
+    # Parse config for provider/model overrides
     if os.path.exists(config_file):
         try:
             with open(config_file, "r", encoding="utf-8") as f:
-                cfg_data = yaml.safe_load(f) or {}
-                if "openai" in cfg_data and isinstance(cfg_data["openai"], dict):
-                    model_name = cfg_data["openai"].get("default_model", model_name)
+                cfg = yaml.safe_load(f) or {}
+            llm_cfg = cfg.get("llm", {})
+            provider = llm_cfg.get("provider", provider)
+            model = llm_cfg.get("model", model)
         except Exception:
             pass
 
+    # Parse secrets for the active provider's API key
+    if os.path.exists(secrets_file):
+        try:
+            with open(secrets_file, "r", encoding="utf-8") as f:
+                sec = yaml.safe_load(f) or {}
+
+            # Try provider-specific key first, then legacy openai key
+            provider_sec = sec.get(provider, {})
+            if isinstance(provider_sec, dict):
+                api_key = provider_sec.get("api_key")
+
+            # Legacy fallback: if provider == groq but only openai key exists
+            if not api_key and provider == "groq":
+                api_key = sec.get("openai", {}).get("api_key") if isinstance(sec.get("openai"), dict) else None
+        except Exception:
+            pass
+
+    # Environment variable overrides (always wins)
+    env_key_map = {
+        "groq": "GROQ_API_KEY",
+        "openai": "OPENAI_API_KEY",
+    }
+    env_var = env_key_map.get(provider, f"{provider.upper()}_API_KEY")
+    api_key = os.getenv(env_var) or api_key
+
+    # Write resolved key back into the environment so SDKs pick it up automatically
     if api_key:
-        os.environ["OPENAI_API_KEY"] = api_key
+        os.environ[env_var] = api_key
 
+    return {"provider": provider, "model": model, "api_key": api_key}
+
+
+# Keep the old name as a shim so main.py sidebar display still works
+def load_openai_config() -> Dict[str, Any]:
+    """Backward-compatible shim over load_llm_config() for UI display."""
+    cfg = load_llm_config()
     return {
-        "api_key": api_key,
-        "model": model_name,
-        "base_url": base_url,
-    }
-
-
-def get_llm(temperature: float = 0.0) -> ChatOpenAI:
-    """Returns an initialized ChatOpenAI instance with configured credentials."""
-    cfg = load_openai_config()
-    kwargs: Dict[str, Any] = {
+        "provider": cfg["provider"],
         "model": cfg["model"],
-        "temperature": temperature,
-        "request_timeout": 60.0,
-        "max_retries": 2,
+        "api_key": cfg["api_key"],
+        # Legacy keys expected by the sidebar
+        "base_url": None,
     }
-    if cfg["api_key"]:
-        kwargs["api_key"] = cfg["api_key"]
-    if cfg["base_url"]:
-        kwargs["base_url"] = cfg["base_url"]
 
-    return ChatOpenAI(**kwargs)
+
+def get_llm(temperature: float = 0.0, model_override: Optional[str] = None) -> BaseChatModel:
+    """
+    Returns a configured LangChain chat model instance.
+    Provider is resolved from mcp_agent.config.yaml (llm.provider field).
+    Currently supported: 'groq' (default), 'openai'.
+    """
+    cfg = load_llm_config()
+    provider = cfg["provider"]
+    model = model_override or cfg["model"]
+    api_key = cfg["api_key"]
+
+    if provider == "groq":
+        kwargs: Dict[str, Any] = {
+            "model": model,
+            "temperature": temperature,
+            "max_retries": 2,
+        }
+        if api_key:
+            kwargs["groq_api_key"] = api_key
+        return ChatGroq(**kwargs)
+
+    if provider == "openai":
+        from langchain_openai import ChatOpenAI  # lazy import
+        kwargs = {
+            "model": model,
+            "temperature": temperature,
+            "request_timeout": 60.0,
+            "max_retries": 2,
+        }
+        if api_key:
+            kwargs["api_key"] = api_key
+        return ChatOpenAI(**kwargs)
+
+    raise ValueError(
+        f"Unsupported LLM provider '{provider}'. "
+        "Set llm.provider to 'groq' or 'openai' in mcp_agent.config.yaml."
+    )
 
 
 def partition_mcp_tools(all_tools: List[Any]) -> Dict[str, List[Dict[str, Any]]]:
