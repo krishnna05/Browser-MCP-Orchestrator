@@ -28,60 +28,16 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Modern UI Styling
-st.markdown(
-    """
-    <style>
-    .main-header {
-        font-size: 2.2rem;
-        font-weight: 700;
-        margin-bottom: 0.2rem;
-        color: #1E293B;
-    }
-    .sub-header {
-        color: #64748B;
-        font-size: 1.05rem;
-        margin-bottom: 1.5rem;
-    }
-    .agent-badge {
-        display: inline-block;
-        padding: 0.2rem 0.6rem;
-        border-radius: 9999px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        margin-right: 0.4rem;
-        margin-bottom: 0.4rem;
-    }
-    .badge-supervisor { background-color: #EDE9FE; color: #6D28D9; border: 1px solid #DDD6FE; }
-    .badge-navigator { background-color: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD; }
-    .badge-extractor { background-color: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; }
-    .badge-evaluator { background-color: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; }
-    .trace-card {
-        background-color: #F8FAFC;
-        border-left: 4px solid #3B82F6;
-        padding: 10px 14px;
-        margin-bottom: 8px;
-        border-radius: 4px;
-        font-size: 0.9rem;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 # Sidebar: Architecture Overview and System Telemetry
 with st.sidebar:
     st.markdown("### 🏛️ Agent Architecture")
     st.markdown(
         """
-        <div style="font-size: 0.88rem; line-height: 1.5; color: #475569;">
-        <span class="agent-badge badge-supervisor">Supervisor</span> Planner & router<br/>
-        <span class="agent-badge badge-navigator">Navigator</span> Goto, click, scroll, type<br/>
-        <span class="agent-badge badge-extractor">Extractor</span> DOM parsing & screenshots<br/>
-        <span class="agent-badge badge-evaluator">Evaluator</span> Sufficiency & synthesis
-        </div>
-        """,
-        unsafe_allow_html=True,
+        * 🟣 **Supervisor** — Planner & deterministic router
+        * 🔵 **Navigator** — Interactions (`goto`, `click`, `type`, `scroll`)
+        * 🟡 **Extractor** — DOM parsing, snapshots & screenshots
+        * 🟢 **Evaluator** — Sufficiency check & report synthesis
+        """
     )
     st.divider()
 
@@ -107,11 +63,9 @@ with st.sidebar:
 
 
 # Application Header
-st.markdown("<div class='main-header'>🌐 Browser-MCP Multi-Agent Orchestrator</div>", unsafe_allow_html=True)
-st.markdown(
-    "<div class='sub-header'>Deterministic multi-agent web automation utilizing LangGraph state machines and Playwright MCP tool binding.</div>",
-    unsafe_allow_html=True,
-)
+st.title("🌐 Browser-MCP Multi-Agent Orchestrator")
+st.caption("Deterministic multi-agent web automation utilizing LangGraph state machines and Playwright MCP tool binding.")
+
 
 # Initialize Session State
 if "initialized" not in st.session_state:
@@ -289,23 +243,21 @@ if st.session_state.last_result:
 
 # Quick Start info guide
 if not st.session_state.last_result:
-    st.markdown(
-        """
-        <div style='padding: 20px; background-color: #F8FAFC; border-radius: 10px; border: 1px solid #E2E8F0; margin-top: 20px;'>
-        <h4 style="margin-top:0;">Architecture Quick Start:</h4>
-        <ol>
-            <li>Provide OpenAI API credentials in <code>mcp_agent.secrets.yaml</code> or set the <code>OPENAI_API_KEY</code> environment variable.</li>
-            <li>Specify an automation instruction (or pick an example from the sidebar).</li>
-            <li>Click <strong>Execute Multi-Agent Workflow</strong> to watch the Supervisor route tasks dynamically between Navigator, Extractor, and Evaluator nodes.</li>
-        </ol>
-        <p><strong>Deterministic Multi-Agent Specialization:</strong></p>
-        <ul>
-            <li><strong>Supervisor (Planner):</strong> Controls state progression and conditional edges.</li>
-            <li><strong>Navigator (Actor):</strong> Exclusively bound to navigation and browser interaction tools.</li>
-            <li><strong>Extractor (Actor):</strong> Exclusively bound to DOM snapshot, screenshot, and parsing tools.</li>
-            <li><strong>Evaluator (Summarizer):</strong> Validates data sufficiency and synthesizes the final report.</li>
-        </ul>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    with st.container(border=True):
+        st.markdown("### 🚀 Quick Start Guide")
+        st.markdown(
+            """
+            1. **API Credentials**: Ensure your free Groq API key is set in `mcp_agent.secrets.yaml` under `groq.api_key`.
+            2. **Specify Automation Objective**: Enter your browsing instruction above or choose one of the sidebar presets.
+            3. **Execute Workflow**: Click **Execute Multi-Agent Workflow** to watch the multi-agent graph stream in real time.
+            """
+        )
+        st.markdown("#### 🤖 Specialized Agent Nodes")
+        st.markdown(
+            """
+            * 🟣 **Supervisor (Planner):** Analyzes state, plans next steps, and routes execution conditionally.
+            * 🔵 **Navigator (Actor):** Exclusively bound to navigation and interactive browser tools.
+            * 🟡 **Extractor (Actor):** Exclusively bound to DOM snapshot, screenshot, and parsing tools.
+            * 🟢 **Evaluator (Summarizer):** Validates objective satisfaction and compiles final markdown reports.
+            """
+        )
