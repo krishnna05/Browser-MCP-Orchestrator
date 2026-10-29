@@ -29,6 +29,8 @@ logs/
 # Node & Playwright temporary artifacts
 node_modules/
 .playwright/
+.playwright-mcp
+.playwright-mcp/
 test-results/
 
 # Operating system files
