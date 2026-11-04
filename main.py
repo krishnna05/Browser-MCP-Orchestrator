@@ -86,6 +86,27 @@ async def prepare_agent():
     """Initializes Playwright MCP persistent connection once per session."""
     if not st.session_state.initialized:
         try:
+            # Ensure runtime logs directory exists
+            os.makedirs("logs", exist_ok=True)
+
+            # Enforce chromium browser for Playwright MCP
+            os.environ["PLAYWRIGHT_MCP_BROWSER"] = "chromium"
+
+            # Auto-install Playwright chromium binary if needed (e.g. Linux / Streamlit Cloud containers)
+            if "playwright_binary_checked" not in st.session_state:
+                import subprocess
+                import sys
+                try:
+                    subprocess.run(
+                        [sys.executable, "-m", "playwright", "install", "chromium"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        check=False,
+                    )
+                except Exception:
+                    pass
+                st.session_state.playwright_binary_checked = True
+
             st.session_state.mcp_context = st.session_state.mcp_app.run()
             st.session_state.mcp_agent_app = await st.session_state.mcp_context.__aenter__()
 

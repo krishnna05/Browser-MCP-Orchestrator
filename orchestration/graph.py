@@ -108,6 +108,22 @@ def load_llm_config() -> Dict[str, Any]:
     env_var = env_key_map.get(provider, f"{provider.upper()}_API_KEY")
     api_key = os.getenv(env_var) or api_key
 
+    # Streamlit Cloud secrets support
+    if not api_key:
+        try:
+            import streamlit as st
+            if hasattr(st, "secrets"):
+                if env_var in st.secrets:
+                    api_key = st.secrets[env_var]
+                elif provider in st.secrets and isinstance(st.secrets[provider], dict):
+                    api_key = st.secrets[provider].get("api_key", api_key)
+                elif "GROQ_API_KEY" in st.secrets and provider == "groq":
+                    api_key = st.secrets["GROQ_API_KEY"]
+                elif "OPENAI_API_KEY" in st.secrets and provider == "openai":
+                    api_key = st.secrets["OPENAI_API_KEY"]
+        except Exception:
+            pass
+
     # Write resolved key back into the environment so SDKs pick it up automatically
     if api_key:
         os.environ[env_var] = api_key

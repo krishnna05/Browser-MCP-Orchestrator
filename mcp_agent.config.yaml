@@ -12,7 +12,7 @@ mcp:
   servers:
     playwright:
       command: "npx"
-      args: ["@playwright/mcp@latest"]
+      args: ["@playwright/mcp@latest", "--browser", "chromium", "--headless", "--no-sandbox"]
 
 llm:
   provider: groq
