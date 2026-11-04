@@ -13,7 +13,7 @@ A deterministic, multi-agent web automation engine powered by **LangGraph state 
 ### Live Execution Demo
 
 <p align="center">
-  <img src="assets/execution_output.png" alt="Browser-MCP Multi-Agent Orchestrator Live Execution Telemetry and Summary Report" width="900" />
+  <img src="https://github.com/krishnna05/Browser-MCP-Orchestrator/blob/main/assets/Browser-Multi-Agent-Orchestrator-11-04-2026_04_29_PM.png?raw=true" alt="Browser-MCP Multi-Agent Orchestrator Live Execution Telemetry and Summary Report" width="900" />
 </p>
 
 *Figure 1: Live execution telemetry and structured execution summary showing real-time agent dispatching, Playwright MCP tool evaluation, and final markdown report generation for GitHub trending repositories.*
@@ -62,7 +62,7 @@ flowchart TD
 
 ---
 
-## Engineering Narrative (STAR Framework)
+## Engineering Narrative
 
 ### Situation
 Modern LLM-based autonomous web agents routinely suffer from tool bloat, context drift, and non-deterministic execution loops when given unrestricted access to browser primitives. Monolithic agents frequently hallucinate CSS selectors, click buttons prematurely before page readiness, or endlessly re-navigate without verifying if required data has already been captured.
