@@ -86,47 +86,13 @@ async def prepare_agent():
     """Initializes Playwright MCP persistent connection once per session."""
     if not st.session_state.initialized:
         try:
-            import subprocess
-            import sys
-
             # Ensure runtime logs directory exists
             os.makedirs("logs", exist_ok=True)
 
-            # ── Shared Playwright browser cache ───────────────────────────────
-            # Setting PLAYWRIGHT_BROWSERS_PATH forces BOTH the Python playwright
-            # package AND the npm playwright bundled inside @playwright/mcp to
-            # read browsers from the same directory on disk.
-            # We install Chromium via Python playwright here (which writes to
-            # that shared path), and the bash wrapper (start_mcp.sh) installs
-            # it again via npm playwright so both paths are satisfied.
+            # Keep the MCP server's browser installer and launcher on one cache.
             shared_browser_cache = os.path.join(os.path.expanduser("~"), ".cache", "ms-playwright")
             os.environ["PLAYWRIGHT_BROWSERS_PATH"] = shared_browser_cache
             os.makedirs(shared_browser_cache, exist_ok=True)
-
-            # ── Install Chromium for Python playwright (once per session) ─────
-            if "playwright_binary_checked" not in st.session_state:
-                try:
-                    subprocess.run(
-                        [sys.executable, "-m", "playwright", "install", "chromium"],
-                        env={**os.environ, "PLAYWRIGHT_BROWSERS_PATH": shared_browser_cache},
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                        check=False,
-                    )
-                except Exception:
-                    pass
-                st.session_state.playwright_binary_checked = True
-
-            # Ensure start_mcp.sh is executable on Linux/Cloud
-            try:
-                subprocess.run(
-                    ["chmod", "+x", "start_mcp.sh"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    check=False,
-                )
-            except Exception:
-                pass
 
             st.session_state.mcp_context = st.session_state.mcp_app.run()
             st.session_state.mcp_agent_app = await st.session_state.mcp_context.__aenter__()
