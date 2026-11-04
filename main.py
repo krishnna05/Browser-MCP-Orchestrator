@@ -42,16 +42,16 @@ with st.sidebar:
     st.divider()
 
     st.markdown("### 💡 Example Objectives")
-    sample_1 = "Go to news.ycombinator.com and extract the top 5 articles."
-    sample_2 = "Navigate to python.org, click on Downloads, and summarize latest version."
-    sample_3 = "Go to quotes.toscrape.com and extract the first 3 quotes with their authors."
+    sample_1 = (
+        "Go to github.com/trending and extract the first 5 trending repositories "
+        "with their repository names, descriptions, programming languages, and star counts."
+    )
+    sample_2 = "Go to quotes.toscrape.com and extract the first 3 quotes with their authors."
 
-    if st.button("📰 Hacker News Top 5", use_container_width=True):
+    if st.button("🔥 GitHub Trending Repos", use_container_width=True):
         st.session_state["user_input_prompt"] = sample_1
-    if st.button("🐍 Python Downloads", use_container_width=True):
-        st.session_state["user_input_prompt"] = sample_2
     if st.button("💬 Quotes to Scrape", use_container_width=True):
-        st.session_state["user_input_prompt"] = sample_3
+        st.session_state["user_input_prompt"] = sample_2
 
     st.divider()
     cfg = load_openai_config()
@@ -107,7 +107,7 @@ default_prompt = st.session_state.get("user_input_prompt", "")
 command_prompt = st.text_area(
     "Specify Automation Objective",
     value=default_prompt,
-    placeholder="e.g., Navigate to news.ycombinator.com, find the first 3 links, and summarize their headlines.",
+    placeholder="e.g., Go to github.com/trending and extract the first 3 trending repositories with their name and star count.",
     height=110,
 )
 
