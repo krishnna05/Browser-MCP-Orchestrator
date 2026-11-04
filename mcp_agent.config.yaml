@@ -12,7 +12,14 @@ mcp:
   servers:
     playwright:
       command: "bash"
-      args: ["start_mcp.sh"]
+      args:
+        - "-lc"
+        - |
+          set -euo pipefail
+          export PLAYWRIGHT_BROWSERS_PATH="${HOME}/.cache/ms-playwright"
+          mkdir -p "${PLAYWRIGHT_BROWSERS_PATH}"
+          npx --yes @playwright/mcp@latest install-browser chrome-for-testing
+          exec npx --yes @playwright/mcp@latest --browser chrome --headless --no-sandbox
 
 llm:
   provider: groq

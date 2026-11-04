@@ -161,12 +161,3 @@ streamlit run main.py
 ```
 
 Open your browser at `http://localhost:8501`, pick an example objective from the sidebar, and monitor the autonomous multi-agent execution live.
-
-### Streamlit Community Cloud
-
-Deploy `main.py` from the repository root and add your model key in the app's
-Streamlit secrets. The root `packages.txt` provides the Linux and Node.js
-dependencies. On startup, `start_mcp.sh` installs the Chrome for Testing build
-expected by Playwright MCP into the shared browser cache before launching the
-server. Keep the installer and `--browser chrome` setting together; installing
-generic Chromium does not satisfy this browser-channel requirement.
