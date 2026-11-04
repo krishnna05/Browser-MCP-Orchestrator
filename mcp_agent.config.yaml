@@ -11,8 +11,8 @@ logger:
 mcp:
   servers:
     playwright:
-      command: "npx"
-      args: ["@playwright/mcp@latest", "--browser", "chromium", "--headless", "--no-sandbox"]
+      command: "bash"
+      args: ["start_mcp.sh"]
 
 llm:
   provider: groq
